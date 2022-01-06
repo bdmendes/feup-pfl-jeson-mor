@@ -15,6 +15,7 @@ initial_state(Size, FirstToPlay, [FirstToPlay,Board]):-
 
 % move(+GameState, +Move, -NewGameState)
 move([CurrentToPlay,Board], Move, [NextToPlay,NewBoard]):-
+    \+has_won(CurrentToPlay, _),
     length(Board, BoardSize),
     parse_move(Move, BoardSize, StartColumnNumber, StartRowNumber, EndColumnNumber, EndRowNumber),
     nth0(StartRowNumber, Board, StartRow),
@@ -23,9 +24,11 @@ move([CurrentToPlay,Board], Move, [NextToPlay,NewBoard]):-
     nth0(EndRowNumber, Board, EndRow),
     nth0(EndColumnNumber, EndRow, _),
     is_knight_move(StartColumnNumber, StartRowNumber, EndColumnNumber, EndRowNumber),
-    next_to_play(CurrentToPlay, NextToPlay),
     replace_nested(Board, EndRowNumber, EndColumnNumber, CurrentToPlay, NewBoard_),
-    replace_nested(NewBoard_, StartRowNumber, StartColumnNumber, o, NewBoard).
+    replace_nested(NewBoard_, StartRowNumber, StartColumnNumber, o, NewBoard),
+    (is_center_square(BoardSize, StartRowNumber, StartColumnNumber)
+        -> winner_atom(CurrentToPlay, NextToPlay);
+        next_to_play(CurrentToPlay, NextToPlay)).
 
 % parse_move(+Move, +BoardSize, -Column, -Row)
 parse_move(StartSquare-EndSquare, BoardSize, StartColumn, StartRow, EndColumn, EndRow):-
@@ -42,9 +45,13 @@ parse_square([H|T], BoardSize, Column, Row):-
     digits_value(T, InvertedRow),
     Row is BoardSize - InvertedRow.
 
-% next_to_play(+Current, -Next)
+% next_to_play(+CurrentToPlay, -Next)
 next_to_play(w,b).
 next_to_play(b,w).
+
+% winning_atom(+CurrentToPlay, +Atom)
+winner_atom(w, ww).
+winner_atom(b, bb).
 
 % is_knight_move(+StartColumn, +StartRow, +EndColumn, +EndRow)
 is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
@@ -53,3 +60,12 @@ is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
 is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
     (EndColumn is StartColumn + 2; EndColumn is StartColumn - 2),
     (EndRow is StartRow - 1; EndRow is StartRow + 1).
+
+% is_center_square(+BoardSize, +Row, +Column)
+is_center_square(BoardSize, Row, Column):-
+    Row =:= BoardSize div 2,
+    Column =:= BoardSize div 2.
+
+% winner_name(+CurrentToPlay, +WinningAtom)
+has_won(ww, 'White').
+has_won(bb, 'Black').
