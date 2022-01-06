@@ -22,6 +22,7 @@ move([CurrentToPlay,Board], Move, [NextToPlay,NewBoard]):-
     Piece = CurrentToPlay,
     nth0(EndRowNumber, Board, EndRow),
     nth0(EndColumnNumber, EndRow, _),
+    is_knight_move(StartColumnNumber, StartRowNumber, EndColumnNumber, EndRowNumber),
     next_to_play(CurrentToPlay, NextToPlay).
 
 % parse_move(+Move, +BoardSize, -Column, -Row)
@@ -42,3 +43,11 @@ parse_square([H|T], BoardSize, Column, Row):-
 % next_to_play(+Current, -Next)
 next_to_play(w,b).
 next_to_play(b,w).
+
+% is_knight_move(+StartColumn, +StartRow, +EndColumn, +EndRow)
+is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
+    (EndColumn is StartColumn + 1; EndColumn is StartColumn - 1),!,
+    (EndRow is StartRow - 2; EndRow is StartRow + 2).
+is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
+    (EndColumn is StartColumn + 2; EndColumn is StartColumn - 2),
+    (EndRow is StartRow - 1; EndRow is StartRow + 1).
