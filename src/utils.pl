@@ -19,3 +19,18 @@ digits_value_aux([H|T], Acc, Value):-
     CharCodeDiff is HeadCharCode - ZeroCharCode,
     Nacc is 10*Acc + CharCodeDiff,
     digits_value_aux(T, Nacc, Value).
+
+% replace(?List, ?Index, ?Elem, ?NewList)
+replace([_|T], 0, Elem, [Elem|T]).
+replace([H|T], Index, Elem, [H|T2]):-
+    Index > 0,
+    NewIndex is Index - 1,
+    replace(T, NewIndex, Elem, T2).
+
+% replace_nested()
+replace_nested([H|T], 0, ColumnIndex, Elem, [NewHead|T]):-
+    replace(H, ColumnIndex, Elem, NewHead).
+replace_nested([H|T], RowIndex, ColumnIndex, Elem, [H|T2]):-
+    RowIndex > 0,
+    NewRowIndex is RowIndex - 1,
+    replace_nested(T, NewRowIndex, ColumnIndex, Elem, T2).

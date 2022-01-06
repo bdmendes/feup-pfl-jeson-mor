@@ -3,8 +3,11 @@
 
 play:-
     initial_state(5,b,GameState),
-    repeat,
+    play_aux(GameState).
+
+play_aux(GameState):-
     display_game(GameState),
     read(X),
-    (move(GameState, X, NewGameState) -> write('Valid move!\n'); write('Invalid move!\n')),
-    fail.
+    (move(GameState, X, NewGameState)
+        -> write('Valid move!\n'), play_aux(NewGameState);
+        write('Invalid move!\n'), play_aux(GameState)).

@@ -23,7 +23,9 @@ move([CurrentToPlay,Board], Move, [NextToPlay,NewBoard]):-
     nth0(EndRowNumber, Board, EndRow),
     nth0(EndColumnNumber, EndRow, _),
     is_knight_move(StartColumnNumber, StartRowNumber, EndColumnNumber, EndRowNumber),
-    next_to_play(CurrentToPlay, NextToPlay).
+    next_to_play(CurrentToPlay, NextToPlay),
+    replace_nested(Board, EndRowNumber, EndColumnNumber, CurrentToPlay, NewBoard_),
+    replace_nested(NewBoard_, StartRowNumber, StartColumnNumber, o, NewBoard).
 
 % parse_move(+Move, +BoardSize, -Column, -Row)
 parse_move(StartSquare-EndSquare, BoardSize, StartColumn, StartRow, EndColumn, EndRow):-
