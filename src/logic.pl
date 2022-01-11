@@ -10,19 +10,19 @@ initial_state(S, FP, [FP,B,B]):-
     replicate(S, b, BR),
     append([BR|MB],[WR], B).
 
-% move(+GameState, +Move, -NewGameState)
+% move(+GameState, ?Move, ?NewGameState)
 move([CP,CB,_], SC-SR-EC-ER, [NP,NB,CB]):-
     can_move([CP,CB,_], SC-SR-EC-ER),
     replace_nested(ER, EC, CB, CP, NB_),
     replace_nested(SR, SC, NB_, o, NB),
     next_to_play(CP, NP).
 
-% can_move(+GameState, +Move)
+% can_move(+GameState, ?Move)
 can_move([CP,CB,_], SC-SR-EC-ER):-
     nth0_nested(SR, SC, CB, P),
     P = CP,
     nth0_nested(ER, EC, CB, _),
-    is_knight_move(SC, SR, EC, ER).
+    knight_move(SC-SR-EC-ER).
 
 % parse_move(+AlgebraicNotation, +Board, -Move)
 parse_move(SS-ES, B, SC-SR-EC-ER):-
@@ -32,7 +32,7 @@ parse_move(SS-ES, B, SC-SR-EC-ER):-
     parse_square(SS_, BS, SC-SR),
     parse_square(ES_, BS, EC-ER).
 
-% parse_square(+AlgebraicNotation, +BoardSize, +Square)
+% parse_square(+AlgebraicNotation, +BoardSize, ?Square)
 parse_square([H|T], BS, C-R):-
     char_code('a', AC),
     char_code(H, CC),
@@ -56,10 +56,17 @@ center_square(BS, R, C):-
     R = K,
     C = K.
 
-% game_over(+GameState, -Winner)
+% game_over(+GameState, ?Winner)
+game_over([CP,CB,_], W):-
+    valid_moves([CP,CB,_], []),!,
+    next_to_play(CP,W).
 game_over([_,CB,OB], W):-
     length(CB, BS),
     center_square(BS, R, C),
     nth0_nested(R, C, CB, o),
     nth0_nested(R, C, OB, W),
     W \= o.
+
+% valid_moves(+GameState, ?ListOfMoves)
+valid_moves([CP,CB,_], L):-
+    findall(SC-SR-EC-ER, can_move([CP,CB,_], SC-SR-EC-ER), L).

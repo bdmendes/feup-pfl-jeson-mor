@@ -1,26 +1,25 @@
 % display_game(+GameState)
-display_game([CurrentToPlay,Board,_]):-
-    length(Board,Size),
-    BoardWidth is Size*2 + 3,
-    ColumnCoordsWidth is Size*2,
+display_game([CP,B,_]):-
+    length(B,BS),
+    BW is BS*2 + 3,
+    CW is BS*2,
     write('\n    '),
-    char_code('a',CharCode),
-    display_column_coords(ColumnCoordsWidth, CharCode),
+    char_code('a',AC),
+    display_column_coords(CW, AC),
     write('\n  '),
-    display_separator(BoardWidth),
+    display_separator(BW),
     put_char('\n'),
-    display_board(Board),
+    display_board(B),
     write('  '),
-    display_separator(BoardWidth),
+    display_separator(BW),
     write('\n\n'),
-    (CurrentToPlay = b -> write('Black to play\n'); write('White to play\n')),
-    put_char('\n').
+    (CP = b -> write('Black to play\n\n'); write('White to play\n\n')).
 
 % display_board(+Board)
 display_board([]).
 display_board([H|T]):-
-    length([H|T],RowNumber),
-    write(RowNumber),
+    length([H|T],RN),
+    write(RN),
     write(' |'),
     display_row(H),
     write(' |\n'),
@@ -35,16 +34,16 @@ display_row([H|T]):-
 
 % display_separator(+Size)
 display_separator(0):- !.
-display_separator(Size):-
+display_separator(S):-
     put_char('-'),
-    NSize is Size - 1,
-    display_separator(NSize).
+    NS is S - 1,
+    display_separator(NS).
 
 % display_bottom_coords(+Width, +Char):-
 display_column_coords(0, _):- !.
-display_column_coords(Width, CharCode):-
-    (Width mod 2 =:= 0 ->
-        put_code(CharCode), NCharCode is CharCode + 1;
-        put_char(' '), NCharCode is CharCode),
-    NWidth is Width - 1,
-    display_column_coords(NWidth, NCharCode).
+display_column_coords(W, C):-
+    (W mod 2 =:= 0 ->
+        put_code(C), NC is C + 1;
+        put_char(' '), NC is C),
+    NW is W - 1,
+    display_column_coords(NW, NC).
