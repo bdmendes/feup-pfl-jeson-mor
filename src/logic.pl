@@ -1,41 +1,33 @@
 :-ensure_loaded('utils.pl').
 
 % initial_state(+Size, +FirstToPlay, -GameState)
-initial_state(Size, FirstToPlay, [FirstToPlay,Board]):-
-    Size >= 5,
-    Size =< 9,
-    Size mod 2 =:= 1,
-    (FirstToPlay = w; FirstToPlay = b),
-    MiddleSize is Size - 2,
-    replicate(Size, o, MiddleRow),
-    replicate(MiddleSize, MiddleRow, MiddleBoard),
-    replicate(Size, w, WhiteRow),
-    replicate(Size, b, BlackRow),
-    append([BlackRow|MiddleBoard], [WhiteRow], Board).
+initial_state(S, FP, [FP,B,B]):-
+    member(S, [5,7,9]),
+    (FP = w; FP = b),
+    MS is S - 2,
+    replicate_nested(MS, S, o, MB),
+    replicate(S, w, WR),
+    replicate(S, b, BR),
+    append([BR|MB], [WR], B).
 
 % move(+GameState, +Move, -NewGameState)
-move([CurrentToPlay,Board], Move, [NextToPlay,NewBoard]):-
-    \+has_won(CurrentToPlay, _),
-    length(Board, BoardSize),
-    parse_move(Move, BoardSize, StartColumnNumber, StartRowNumber, EndColumnNumber, EndRowNumber),
-    nth0(StartRowNumber, Board, StartRow),
-    nth0(StartColumnNumber, StartRow, Piece),
-    Piece = CurrentToPlay,
-    nth0(EndRowNumber, Board, EndRow),
-    nth0(EndColumnNumber, EndRow, _),
-    is_knight_move(StartColumnNumber, StartRowNumber, EndColumnNumber, EndRowNumber),
-    replace_nested(Board, EndRowNumber, EndColumnNumber, CurrentToPlay, NewBoard_),
-    replace_nested(NewBoard_, StartRowNumber, StartColumnNumber, o, NewBoard),
-    (is_center_square(BoardSize, StartRowNumber, StartColumnNumber)
-        -> winner_atom(CurrentToPlay, NextToPlay);
-        next_to_play(CurrentToPlay, NextToPlay)).
+move([CP,CB,_], M, [NP,NB,CB]):-
+    length(CB, BS),
+    parse_move(M, BS, SC, SR, EC, ER),
+    nth0_nested(SR, SC, CB, P),
+    P = CP,
+    nth0_nested(ER, EC, CB, _),
+    is_knight_move(SC, SR, EC, ER),
+    replace_nested(ER, EC, CB, CP, NB_),
+    replace_nested(SR, SC, NB_, o, NB),
+    next_to_play(CP, NP).
 
 % parse_move(+Move, +BoardSize, -Column, -Row)
-parse_move(StartSquare-EndSquare, BoardSize, StartColumn, StartRow, EndColumn, EndRow):-
-    atom_chars(StartSquare, StartSquareString),
-    atom_chars(EndSquare, EndSquareString),
-    parse_square(StartSquareString, BoardSize, StartColumn, StartRow),
-    parse_square(EndSquareString, BoardSize, EndColumn, EndRow).
+parse_move(SS-ES, BS, SC, SR, EC, ER):-
+    atom_chars(SS, SSString),
+    atom_chars(ES, ESString),
+    parse_square(SSString, BS, SC, SR),
+    parse_square(ESString, BS, EC, ER).
 
 % parse_square(+AlgebraicNotationString, +BoardSize, -Column, -Row)
 parse_square([H|T], BoardSize, Column, Row):-
@@ -49,13 +41,9 @@ parse_square([H|T], BoardSize, Column, Row):-
 next_to_play(w,b).
 next_to_play(b,w).
 
-% winning_atom(+CurrentToPlay, +Atom)
-winner_atom(w, ww).
-winner_atom(b, bb).
-
 % is_knight_move(+StartColumn, +StartRow, +EndColumn, +EndRow)
 is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
-    (EndColumn is StartColumn + 1; EndColumn is StartColumn - 1),!,
+    (EndColumn is StartColumn + 1; EndColumn is StartColumn - 1),
     (EndRow is StartRow - 2; EndRow is StartRow + 2).
 is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
     (EndColumn is StartColumn + 2; EndColumn is StartColumn - 2),
@@ -66,6 +54,13 @@ is_center_square(BoardSize, Row, Column):-
     Row =:= BoardSize div 2,
     Column =:= BoardSize div 2.
 
-% winner_name(+CurrentToPlay, +WinningAtom)
-has_won(ww, 'White').
-has_won(bb, 'Black').
+% digits_value(+List, -Value)
+digits_value(String, Value) :-
+    digits_value_aux(String,0,Value).
+digits_value_aux([], Value, Value).
+digits_value_aux([H|T], Acc, Value):-
+    char_code('0', ZeroCharCode),
+    char_code(H, HeadCharCode),
+    CharCodeDiff is HeadCharCode - ZeroCharCode,
+    Nacc is 10*Acc + CharCodeDiff,
+    digits_value_aux(T, Nacc, Value).

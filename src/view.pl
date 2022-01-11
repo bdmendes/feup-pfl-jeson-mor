@@ -1,5 +1,5 @@
 % display_game(+GameState)
-display_game([CurrentToPlay,Board]):-
+display_game([CurrentToPlay,Board,_]):-
     length(Board,Size),
     BoardWidth is Size*2 + 3,
     ColumnCoordsWidth is Size*2,
