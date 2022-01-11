@@ -8,59 +8,58 @@ initial_state(S, FP, [FP,B,B]):-
     replicate_nested(MS, S, o, MB),
     replicate(S, w, WR),
     replicate(S, b, BR),
-    append([BR|MB], [WR], B).
+    append([BR|MB],[WR], B).
 
 % move(+GameState, +Move, -NewGameState)
-move([CP,CB,_], M, [NP,NB,CB]):-
-    length(CB, BS),
-    parse_move(M, BS, SC, SR, EC, ER),
-    nth0_nested(SR, SC, CB, P),
-    P = CP,
-    nth0_nested(ER, EC, CB, _),
-    is_knight_move(SC, SR, EC, ER),
+move([CP,CB,_], SC-SR-EC-ER, [NP,NB,CB]):-
+    can_move([CP,CB,_], SC-SR-EC-ER),
     replace_nested(ER, EC, CB, CP, NB_),
     replace_nested(SR, SC, NB_, o, NB),
     next_to_play(CP, NP).
 
-% parse_move(+Move, +BoardSize, -Column, -Row)
-parse_move(SS-ES, BS, SC, SR, EC, ER):-
-    atom_chars(SS, SSString),
-    atom_chars(ES, ESString),
-    parse_square(SSString, BS, SC, SR),
-    parse_square(ESString, BS, EC, ER).
+% can_move(+GameState, +Move)
+can_move([CP,CB,_], SC-SR-EC-ER):-
+    nth0_nested(SR, SC, CB, P),
+    P = CP,
+    nth0_nested(ER, EC, CB, _),
+    is_knight_move(SC, SR, EC, ER).
 
-% parse_square(+AlgebraicNotationString, +BoardSize, -Column, -Row)
-parse_square([H|T], BoardSize, Column, Row):-
-    char_code('a', ACharCode),
-    char_code(H, ColumnCharCode),
-    Column is ColumnCharCode - ACharCode,
-    digits_value(T, InvertedRow),
-    Row is BoardSize - InvertedRow.
+% parse_move(+AlgebraicNotation, +Board, -Move)
+parse_move(SS-ES, B, SC-SR-EC-ER):-
+    length(B, BS),
+    atom_chars(SS, SS_),
+    atom_chars(ES, ES_),
+    parse_square(SS_, BS, SC-SR),
+    parse_square(ES_, BS, EC-ER).
 
-% next_to_play(+CurrentToPlay, -Next)
+% parse_square(+AlgebraicNotation, +BoardSize, +Square)
+parse_square([H|T], BS, C-R):-
+    char_code('a', AC),
+    char_code(H, CC),
+    C is CC - AC,
+    catch(number_chars(IR,T), _, fail),
+    R is BS - IR.
+
+% next_to_play(?CurrentToPlay, ?Next)
 next_to_play(w,b).
 next_to_play(b,w).
 
-% is_knight_move(+StartColumn, +StartRow, +EndColumn, +EndRow)
-is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
-    (EndColumn is StartColumn + 1; EndColumn is StartColumn - 1),
-    (EndRow is StartRow - 2; EndRow is StartRow + 2).
-is_knight_move(StartColumn, StartRow, EndColumn, EndRow):-
-    (EndColumn is StartColumn + 2; EndColumn is StartColumn - 2),
-    (EndRow is StartRow - 1; EndRow is StartRow + 1).
+% knight_move(+Move)
+knight_move(SC-SR-EC-ER):-
+    member([DC,DR],[[1,-2],[1,2],[-1,-2],[-1,2],[2,-1],[2,1],[-2,-1],[-2,1]]),
+    EC is SC + DC,
+    ER is SR + DR.
 
-% is_center_square(+BoardSize, +Row, +Column)
-is_center_square(BoardSize, Row, Column):-
-    Row =:= BoardSize div 2,
-    Column =:= BoardSize div 2.
+% center_square(+BoardSize, ?Row, ?Column)
+center_square(BS, R, C):-
+    K is BS div 2,
+    R = K,
+    C = K.
 
-% digits_value(+List, -Value)
-digits_value(String, Value) :-
-    digits_value_aux(String,0,Value).
-digits_value_aux([], Value, Value).
-digits_value_aux([H|T], Acc, Value):-
-    char_code('0', ZeroCharCode),
-    char_code(H, HeadCharCode),
-    CharCodeDiff is HeadCharCode - ZeroCharCode,
-    Nacc is 10*Acc + CharCodeDiff,
-    digits_value_aux(T, Nacc, Value).
+% game_over(+GameState, -Winner)
+game_over([_,CB,OB], W):-
+    length(CB, BS),
+    center_square(BS, R, C),
+    nth0_nested(R, C, CB, o),
+    nth0_nested(R, C, OB, W),
+    W \= o.
