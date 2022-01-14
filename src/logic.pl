@@ -19,8 +19,7 @@ move([CP,CB,_], SC-SR-EC-ER, [NP,NB,CB]):-
 
 % can_move(+GameState, ?Move)
 can_move([CP,CB,_], SC-SR-EC-ER):-
-    nth0_nested(SR, SC, CB, P),
-    P = CP,
+    nth0_nested(SR, SC, CB, CP),
     nth0_nested(ER, EC, CB, _),
     knight_move(SC-SR-EC-ER).
 
