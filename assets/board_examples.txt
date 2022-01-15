@@ -1,0 +1,26 @@
+Board 9
+
+[
+    [b, b, b, b, b, b, b, b, b],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [o, o, o, o, o, o, o, o, o],
+    [w, w, w, w, w, w, w, w, w]
+]
+
+Board 9, 8 white, 8 black
+[
+    [o,b,b,b,b,b,b,b,o],
+    [o,o,o,o,o,o,o,o,o],
+    [o,o,o,o,o,o,o,o,o],
+    [o,o,o,o,o,o,o,o,o],
+    [b,o,o,o,o,o,o,o,w],
+    [o,o,o,o,o,o,o,o,o],
+    [o,o,o,o,o,o,o,o,o],
+    [o,o,o,o,o,o,o,o,o],
+    [o,w,w,w,w,w,w,w,o]
+]
