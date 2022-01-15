@@ -1,36 +1,28 @@
 :-use_module(library(lists)).
 
-% replicate(+Size, +Elem, ?List)
-replicate(Size, Elem, List):-
-    Size >= 0,
-    replicate_aux(Size, Elem, List, []).
-replicate_aux(0,_,List,List).
-replicate_aux(Size, Elem, List, Acc):-
-    NSize is Size - 1,
-    replicate_aux(NSize, Elem, List, [Elem|Acc]).
+% replicate_nested(?Height, ?Width, ?Elem, ?List)
+replicate_nested(H, W, E, L):-
+    replicate(W, E, R),
+    replicate(H, R, L).
 
-% digits_value(+List, -Value)
-digits_value(String, Value) :-
-    digits_value_aux(String,0,Value).
-digits_value_aux([], Value, Value).
-digits_value_aux([H|T], Acc, Value):-
-    char_code('0', ZeroCharCode),
-    char_code(H, HeadCharCode),
-    CharCodeDiff is HeadCharCode - ZeroCharCode,
-    Nacc is 10*Acc + CharCodeDiff,
-    digits_value_aux(T, Nacc, Value).
+% replicate(?Size, ?Elem, ?List)
+replicate(S, E, L):-
+    length(L, S),
+    maplist(=(E), L).
 
-% replace(?List, ?Index, ?Elem, ?NewList)
-replace([_|T], 0, Elem, [Elem|T]).
-replace([H|T], Index, Elem, [H|T2]):-
-    Index > 0,
-    NewIndex is Index - 1,
-    replace(T, NewIndex, Elem, T2).
+% nth0_nested(?Row, ?Col, ?List, ?Elem)
+nth0_nested(R, C, L, E):-
+    nth0(R, L, F),
+    nth0(C, F, E).
 
-% replace_nested()
-replace_nested([H|T], 0, ColumnIndex, Elem, [NewHead|T]):-
-    replace(H, ColumnIndex, Elem, NewHead).
-replace_nested([H|T], RowIndex, ColumnIndex, Elem, [H|T2]):-
-    RowIndex > 0,
-    NewRowIndex is RowIndex - 1,
-    replace_nested(T, NewRowIndex, ColumnIndex, Elem, T2).
+% replace(?Index, ?List, ?Elem, ?NewList)
+replace(I, L, E, NL):-
+    nth0(I, L, _, R),
+    nth0(I, NL, E, R).
+
+% replace_nested(?Row, ?Column, ?List, ?Elem, ?NewList)
+replace_nested(R, C, L, E, NL):-
+    nth0(R, L, F),
+    replace(C, F, E, NF),
+    nth0(R, L, _, K),
+    nth0(R, NL, NF, K).

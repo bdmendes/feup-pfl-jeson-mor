@@ -2,16 +2,21 @@
 :-ensure_loaded('view.pl').
 
 play:-
-    initial_state(5,w,GameState),
-    play_aux(GameState).
+    initial_state(5,w,GS),
+    play_aux(GS).
 
-play_aux([CurrentToPlay, _]):-
-    has_won(CurrentToPlay, Name),!,
-    format("~w has won the game!\n", [Name]).
+play_aux(GS):-
+    game_over(GS, Winner),!,
+    format("~w has won the game!\n", [Winner]).
 
-play_aux(GameState):-
-    display_game(GameState),
+play_aux([CP,CB,OB]):-
+    display_game([CP,CB,OB]),
     read(X),
-    (move(GameState, X, NewGameState)
-        -> write('Valid move!\n'), play_aux(NewGameState);
-        write('Invalid move!\n'), play_aux(GameState)).
+    (parse_move(X, CB, M)
+        -> play_aux2(M, [CP,CB,OB]);
+        write('Invalid algebraic notation\n'), play_aux([CP,CB,OB])).
+
+play_aux2(M, [CP,CB,OB]):-
+    (move([CP,CB,OB], M, NGS)
+    -> write('Valid move!\n'), play_aux(NGS);
+    write('Invalid move!\n'), play_aux([CP,CB,OB])).
