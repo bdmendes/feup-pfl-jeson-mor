@@ -24,3 +24,12 @@ Board 9, 8 white, 8 black
     [o,o,o,o,o,o,o,o,o],
     [o,w,w,w,w,w,w,w,o]
 ]
+
+
+[
+    [b, b, b, b, b],
+    [o, o, o, o, o],
+    [o, o, o, o, o],
+    [o, o, o, o, o],
+    [w, w, w, w, w]
+]

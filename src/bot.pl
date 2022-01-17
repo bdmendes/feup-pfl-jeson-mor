@@ -7,22 +7,13 @@ findall(_, nth0_nested(_, _, B, P), L),
     length(L, M).
 
 % knight_hops(?StartPos, ?EndPos, ?Hops)
-knight_hops_needed([SP , EP, H):-
-    knight_hops_needed_aux([SP], EP, L, []),
-    length(L, H).
+knight_hops_needed(CB,SC-SR, EP, H):-
+    find_path(CB, [[SC-SR]], EP, M),
+    length(M, N),
+    H is N-1.
 
-% DFS
-knight_hops_needed_aux(EP, EP, L, L).
-knight_hops_needed_aux(CP, EP, L, V):-
-    \+member(CP, V), 
-    CC-CR = CP,
-    CC > 0,
-    CC =< 5,
-    CR > 0,
-    CR =< 5,
-    knight_move(CC-CR-NC-NR),
-    knight_hops_needed_aux(NC-NR, EP, L, [CP|V]).
-
-
-
-    
+find_path(_, [[EP|T]|_], EP, [EP|T]).
+find_path(CB, [[CC-CR|T]|LM], EP, M):-
+    findall([NC-NR, CC-CR|T], (can_move([_,CB,_], CC-CR-NC-NR), \+member(NC-NR, [CC-CR|T])), NM1),
+    append(LM, NM1, NM2),
+    find_path(CB, NM2, EP, M).
