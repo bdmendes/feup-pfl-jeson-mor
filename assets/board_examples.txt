@@ -50,3 +50,12 @@ Board 5x5, after white win
     [o, o, o, o, o],
     [o, o, o, o, o]
 ]
+
+Board 5x5, white should take at center situation
+[
+    [b, b, b, o, b],
+    [o, o, o, o, o],
+    [o, o, b, o, o],
+    [w, o, o, o, o],
+    [w, w, o, w, w]
+]

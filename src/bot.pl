@@ -7,10 +7,13 @@ material_count(P, B, M):-
     length(L, M).
 
 % knight_hops(+Board, ?StartPosition, ?EndPosition, ?Hops)
+:- dynamic knight_hops/4.
 knight_hops(B, SC-SR, EC-ER, H):-
     path(B, SC-SR, EC-ER, P),
     length(P, S),
-    H is S-1.
+    H is S-1,
+    asserta(( knight_hops(B, SC-SR, EC-ER, H):- ! )),
+    asserta(( knight_hops(B, EC-ER, SC-SR, H):- ! )).
 
 % path(+Board, ?StartPosition, ?EndPosition, ?Path)
 path(B, SC-SR, EC-ER, P):-
@@ -60,12 +63,30 @@ map_center_square_hops_aux(CR-CC, B, [C-R|T], A, H):-
     map_center_square_hops_aux(CR-CC, B, T, [N|A], H).
 
 % knight_position_score(+CenterHops, -Score)
-knight_position_score(0, 0).
+knight_position_score(0, 1).
 knight_position_score(H, S):-
     H > 0,
     S is 1/H.
 
 % choose_move(+GameState, +Level, -Move)
-choose_move([CP,CB,_], 0, M):-
+choose_move([CP,CB,_], 1, M):-
     valid_moves([CP,CB,_], L),
     random_member(M, L).
+choose_move([CP,CB,_], 2, M):-
+    valid_moves([CP,CB,_], L),
+    map_evaluate([CP,CB,_], L, E),
+    max_element_index(E, I),
+    nth0(I, L, M).
+
+% map_evaluate(+GameState, +Moves, +Evaluations)
+map_evaluate([CP,CB,_], [H|T], E):-
+    map_evaluate_aux([CP,CB,_], [H|T], [], RE),
+    reverse(RE,E).
+
+% map_evaluate_aux(+GameState, +Moves, +Acc, +Evaluations)
+map_evaluate_aux(_, [], E, E).
+map_evaluate_aux([CP,CB,_], [H|T], A, E):-
+    H = SC-SR-EC-ER,
+    move([CP,CB,_], SC-SR-EC-ER, [NP, NB, OB]),
+    value([NP, NB, OB], CP, V),
+    map_evaluate_aux([CP,CB,_], T, [V|A], E).
