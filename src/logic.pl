@@ -60,6 +60,7 @@ game_over([CP,CB,_], W):-
     valid_moves([CP,CB,_], []),!,
     next_to_play(CP,W).
 game_over([_,CB,OB], W):-
+    nonvar(CB), nonvar(OB),
     length(CB, BS),
     center_square(BS, R, C),
     nth0_nested(R, C, CB, o),

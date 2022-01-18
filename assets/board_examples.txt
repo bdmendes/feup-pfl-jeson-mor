@@ -1,5 +1,4 @@
-Board 9
-
+Board 9x9, start
 [
     [b, b, b, b, b, b, b, b, b],
     [o, o, o, o, o, o, o, o, o],
@@ -12,7 +11,7 @@ Board 9
     [w, w, w, w, w, w, w, w, w]
 ]
 
-Board 9, 8 white, 8 black
+Board 9x9, 8 white, 8 black
 [
     [o,b,b,b,b,b,b,b,o],
     [o,o,o,o,o,o,o,o,o],
@@ -25,11 +24,29 @@ Board 9, 8 white, 8 black
     [o,w,w,w,w,w,w,w,o]
 ]
 
-
+Board 5x5, start
 [
     [b, b, b, b, b],
     [o, o, o, o, o],
     [o, o, o, o, o],
     [o, o, o, o, o],
     [w, w, w, w, w]
+]
+
+Board 5x5, before white win
+[
+    [o, o, o, b, o],
+    [o, o, o, o, o],
+    [o, o, w, o, o],
+    [o, o, o, o, o],
+    [o, o, o, o, o]
+]
+
+Board 5x5, after white win
+[
+    [o, o, o, w, o],
+    [o, o, o, o, o],
+    [o, o, o, o, o],
+    [o, o, o, o, o],
+    [o, o, o, o, o]
 ]

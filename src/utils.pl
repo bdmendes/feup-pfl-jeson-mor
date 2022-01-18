@@ -1,4 +1,5 @@
 :-use_module(library(lists)).
+:-use_module(library(random)).
 
 % replicate_nested(?Height, ?Width, ?Elem, ?List)
 replicate_nested(H, W, E, L):-
