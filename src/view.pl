@@ -1,5 +1,7 @@
+:-ensure_loaded('bot.pl').
+
 % display_game(+GameState)
-display_game([CP,B,_]):-
+display_game([CP,B,OB]):-
     length(B,BS),
     BW is BS*2 + 3,
     CW is BS*2,
@@ -13,6 +15,8 @@ display_game([CP,B,_]):-
     write('  '),
     display_separator(BW),
     write('\n\n'),
+    board_evaluation([CP,B,OB],E),
+    format('Computer board evaluation: ~2F\n', [E]),
     (CP = b -> write('Black to play\n\n'); write('White to play\n\n')).
 
 % display_board(+Board)

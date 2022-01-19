@@ -6,30 +6,30 @@ material_count(P, B, M):-
     findall(_, nth0_nested(_, _, B, P), L),
     length(L, M).
 
-% knight_hops(+Board, ?StartPosition, ?EndPosition, ?Hops)
+% knight_hops(+BoardSize, ?StartPosition, ?EndPosition, ?Hops)
 :- dynamic knight_hops/4.
-knight_hops(B, SC-SR, EC-ER, H):-
-    path(B, SC-SR, EC-ER, P),
+knight_hops(BS, SC-SR, EC-ER, H):-
+    path(BS, SC-SR, EC-ER, P),
     length(P, S),
     H is S-1,
-    asserta(( knight_hops(B, SC-SR, EC-ER, H):- ! )),
-    asserta(( knight_hops(B, EC-ER, SC-SR, H):- ! )).
+    asserta(( knight_hops(BS, SC-SR, EC-ER, H):- ! )),
+    asserta(( knight_hops(BS, EC-ER, SC-SR, H):- ! )).
 
-% path(+Board, ?StartPosition, ?EndPosition, ?Path)
-path(B, SC-SR, EC-ER, P):-
-    bfs_path(B, SC-SR, [[EC-ER]], P).
+% path(+BoardSize, ?StartPosition, ?EndPosition, ?Path)
+path(BS, SC-SR, EC-ER, P):-
+    bfs_path(BS, SC-SR, [[EC-ER]], P).
 
-% bfs_path(+Board, +EndPosition, +Queue, ?Path)
+% bfs_path(+BoardSize, +EndPosition, +Queue, ?Path)
 bfs_path(_, EC-ER, [[EC-ER|T]|_], [EC-ER|T]):- !.
-bfs_path(B, EC-ER, [V|Q], P):-
+bfs_path(BS, EC-ER, [V|Q], P):-
     V = [CC-CR|T],
-    findall([NC-NR, CC-CR|T], (can_move([_,B,_], CC-CR-NC-NR), \+member(NC-NR, [CC-CR|T])), L),
+    findall([NC-NR, CC-CR|T], (knight_move(CC-CR-NC-NR), NC >= 0, NC < BS, NR >= 0, NR < BS, \+member(NC-NR, [CC-CR|T])), L),
     append(Q, L, NQ),
-    bfs_path(B, EC-ER, NQ, P).
+    bfs_path(BS, EC-ER, NQ, P).
 
 % value(+GameState, +Player, -Value)
-value([_,CB,OB], P, V):-
-    board_evaluation([_,CB,OB],E),
+value([CP,CB,OB], P, V):-
+    board_evaluation([CP,CB,OB],E),
     (P = w -> V is E; V is -E).
 
 % board_evaluation(+GameState, -Evaluation)
@@ -37,30 +37,47 @@ board_evaluation([CP,CB,OB], 9999):-
     game_over([CP,CB,OB], w),!.
 board_evaluation([CP,CB,OB], -9999):-
     game_over([CP,CB,OB], b),!.
-board_evaluation([_,CB,_], E):-
+board_evaluation([CP,CB,_], E):-
     findall(C-R, nth0_nested(R, C, CB, w), WK),
     findall(C-R, nth0_nested(R, C, CB, b), BK),
     length(WK, WM),
     length(BK, BM),
-    map_center_square_hops(CB, WK, WKH),
-    map_center_square_hops(CB, BK, BKH),
+    length(CB, BS),
+    map_center_square_hops(BS, WK, WKH),
+    map_center_square_hops(BS, BK, BKH),
     maplist(knight_position_score, WKH, WKSL),
     maplist(knight_position_score, BKH, BKSL),
     sumlist(WKSL, WKS),
     sumlist(BKSL, BKS),
-    E is WM + WKS - BM - BKS.
+    valid_moves([CP,CB,_], L),
+    to_opponent_square([CP,CB,_], L, CL),
+    length(CL, CLS),
+    (CP = w -> RCLS is CLS; RCLS is -CLS),
+    E is WM + 0.5*WKS - BM - 0.5*BKS + 0.5*RCLS.
 
-% map_center_square_hops(+Board, +PositionList, -Hops)
-map_center_square_hops(B, L, H):-
-    length(B, BS),
+% to_opponent_square(+GameState, +Moves, -FilteredMoves)
+to_opponent_square([CP,CB,_], M, FM):-
+    next_to_play(CP, NP), 
+    to_opponnent_square_aux([CP,CB,_], NP, M, [], FM).
+
+% to_opponent_square_aux(+GameState, +NextPlayer, +Moves, +Acc, -FilteredMoves)
+to_opponent_square_aux(_, _, [], FM, FM).
+to_opponent_square_aux([CP,CB,_], NP, [SC-SR-EC-ER|T], A, FM):-
+    nth0_nested(ER,EC,CB,NP),!,
+    to_opponent_square_aux([CP,CB,_], NP, T, [SC-SR-EC-ER|A], FM).
+to_opponent_square_aux([CP,CB,_], NP, [_|T], A, FM):-
+    to_opponent_square_aux([CP,CB,_], NP, T, A, FM).
+
+% map_center_square_hops(+BoardSize, +PositionList, -Hops)
+map_center_square_hops(BS, L, H):-
     center_square(BS, CR, CC),
-    map_center_square_hops_aux(CR-CC, B, L, [], H).
+    map_center_square_hops_aux(CR-CC, BS, L, [], H).
 
-% map_center_square_hops_aux(+CenterSquare, +Board, +PositionList, +Acc, -Hops)
+% map_center_square_hops_aux(+CenterSquare, +BoardSize, +PositionList, +Acc, -Hops)
 map_center_square_hops_aux(_, _, [], H, H).
-map_center_square_hops_aux(CR-CC, B, [C-R|T], A, H):-
-    knight_hops(B, C-R, CR-CC, N),
-    map_center_square_hops_aux(CR-CC, B, T, [N|A], H).
+map_center_square_hops_aux(CR-CC, BS, [C-R|T], A, H):-
+    knight_hops(BS, C-R, CR-CC, N),
+    map_center_square_hops_aux(CR-CC, BS, T, [N|A], H).
 
 % knight_position_score(+CenterHops, -Score)
 knight_position_score(0, 1).
