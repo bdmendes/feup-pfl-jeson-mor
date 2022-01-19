@@ -53,12 +53,12 @@ board_evaluation([CP,CB,_], E):-
     to_opponent_square([CP,CB,_], L, CL),
     length(CL, CLS),
     (CP = w -> RCLS is CLS; RCLS is -CLS),
-    E is WM + 0.5*WKS - BM - 0.5*BKS + 0.5*RCLS.
+    E is WM + 0.25*WKS - BM - 0.25*BKS + 0.5*RCLS.
 
 % to_opponent_square(+GameState, +Moves, -FilteredMoves)
 to_opponent_square([CP,CB,_], M, FM):-
     next_to_play(CP, NP), 
-    to_opponnent_square_aux([CP,CB,_], NP, M, [], FM).
+    to_opponent_square_aux([CP,CB,_], NP, M, [], FM).
 
 % to_opponent_square_aux(+GameState, +NextPlayer, +Moves, +Acc, -FilteredMoves)
 to_opponent_square_aux(_, _, [], FM, FM).
