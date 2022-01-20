@@ -28,16 +28,16 @@ replace_nested(R, C, L, E, NL):-
     nth0(R, L, _, K),
     nth0(R, NL, NF, K).
 
-% max_element_index(+List, -Index)
-max_element_index([H|T], I):-
-    max_element_index_aux([H|T], H, 0, 0, I).
+% min_element_index(+List, -Index)
+min_element_index([H|T], I):-
+    min_element_index_aux([H|T], H, 0, 0, I).
 
-% max_element_index_aux(+List, +CurrMax, +CurrIndex, +CurrMaxIndex, -Index)
-max_element_index_aux([], _, _, CMI, CMI).
-max_element_index_aux([H|T], CM, CI, _, I):-
-    H > CM, !,
+% min_element_index_aux(+List, +CurrMax, +CurrIndex, +CurrMaxIndex, -Index)
+min_element_index_aux([], _, _, CMI, CMI).
+min_element_index_aux([H|T], CM, CI, _, I):-
+    H < CM, !,
     NI is CI + 1,
-    max_element_index_aux(T, H, NI, CI, I).
-max_element_index_aux([_|T], CM, CI, CMI, I):-
+    min_element_index_aux(T, H, NI, CI, I).
+min_element_index_aux([_|T], CM, CI, CMI, I):-
     NI is CI + 1,
-    max_element_index_aux(T, CM, NI, CMI, I).
+    min_element_index_aux(T, CM, NI, CMI, I).
