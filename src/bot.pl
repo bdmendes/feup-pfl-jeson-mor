@@ -48,6 +48,7 @@ board_evaluation([CP,CB,OB], -9999):-
 board_evaluation([CP,CB,_], E):-
     material_count(w, CB, WM),
     material_count(b, CB, BM),
+    WM > 0, BM > 0,
     knights_position_score(w, CB, WKS),
     knights_position_score(b, CB, BKS),
     attacking_knights([w,CB,_], WAK),
