@@ -1,0 +1,9 @@
+Greedy bot. Take at center
+choose_move([w,[
+         [o, b, b, o, o],
+         [o, o, o, o, o],
+         [o, o, b, o, o],
+         [w, o, o, o, o],
+         [w, o, o, o, w]
+     ],_], 2, M).
+

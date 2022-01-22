@@ -1,10 +1,15 @@
 :-ensure_loaded('utils.pl').
 :-ensure_loaded('logic.pl').
 
+%%%% Heuristic 1: Material count %%%%
+
 % material_count(+Player, +Board, -Material)
 material_count(P, B, M):-
     findall(_, nth0_nested(_, _, B, P), L),
     length(L, M).
+
+
+%%%% Heuristic 2: Positional advantage: distance to center %%%%
 
 % knights_position_score(+Player, +Board, -Score)
 knights_position_score(P, B, S):-
@@ -14,18 +19,31 @@ knights_position_score(P, B, S):-
     maplist(knight_position_score, KH, KSL),
     sumlist(KSL, S).
 
+% knight_position_score(+CenterHops, -Score)
+knight_position_score(0, 1).
+knight_position_score(H, S):-
+    H > 0,
+    S is 1/H.
+
+% map_center_square_hops(+BoardSize, +PositionList, -Hops)
+map_center_square_hops(BS, L, H):-
+    center_square(BS, CR, CC),
+    map_center_square_hops_aux(CR-CC, BS, L, [], H).
+
+% map_center_square_hops_aux(+CenterSquare, +BoardSize, +PositionList, +Acc, -Hops)
+map_center_square_hops_aux(_, _, [], H, H).
+map_center_square_hops_aux(CR-CC, BS, [C-R|T], A, H):-
+    knight_hops(BS, C-R, CR-CC, N),
+    map_center_square_hops_aux(CR-CC, BS, T, [N|A], H).
+
 % knight_hops(+BoardSize, ?StartPosition, ?EndPosition, ?Hops)
 :- dynamic knight_hops/4.
 knight_hops(BS, SC-SR, EC-ER, H):-
-    path(BS, SC-SR, EC-ER, P),
+    bfs_path(BS, SC-SR, [[EC-ER]], P),
     length(P, S),
     H is S-1,
     asserta(( knight_hops(BS, SC-SR, EC-ER, H):- ! )),
     asserta(( knight_hops(BS, EC-ER, SC-SR, H):- ! )).
-
-% path(+BoardSize, ?StartPosition, ?EndPosition, ?Path)
-path(BS, SC-SR, EC-ER, P):-
-    bfs_path(BS, SC-SR, [[EC-ER]], P).
 
 % bfs_path(+BoardSize, +EndPosition, +Queue, ?Path)
 bfs_path(_, EC-ER, [[EC-ER|T]|_], [EC-ER|T]):- !.
@@ -35,8 +53,31 @@ bfs_path(BS, EC-ER, [V|Q], P):-
     append(Q, L, NQ),
     bfs_path(BS, EC-ER, NQ, P).
 
-% value(+GameState, +Player, -Value)
-value([CP,CB,OB], P, V):-
+
+%%%% Heuristic 3: Tactical opportunities: knights attacking others %%%%
+
+% attacking_knights(+GameState, -NumberOfAttacks)
+attacking_knights([P,CB,_], NA):-
+    findall(C-R, nth0_nested(R, C, CB, P), K),
+    next_to_play(P, NP), 
+    filter_attacking_knights([P,CB,_], NP, K, [], FM),
+    length(FM, NA).
+
+% to_opponent_square_aux(+GameState, +NextPlayer, +KnightPositions, +Acc, -FilteredMoves)
+filter_attacking_knights(_, _, [], FM, FM).
+filter_attacking_knights([CP,CB,_], NP, [SC-SR|T], A, FM):-
+    findall(EC-ER, (can_move([CP,CB,_], SC-SR-EC-ER), nth0_nested(ER,EC,CB,NP)), L),
+    length(L, LS),
+    LS > 0, !,
+    filter_attacking_knights([CP,CB,_], NP, T, [SC-SR|A], FM).
+filter_attacking_knights([CP,CB,_], NP, [_|T], A, FM):-
+    filter_attacking_knights([CP,CB,_], NP, T, A, FM).
+
+
+%%%% Static board evaluation using heuristics %%%%
+
+% value(+Player, +GameState, -Value)
+value(P, [CP,CB,OB], V):-
     board_evaluation([CP,CB,OB],E),
     (P = w -> V is E; V is -E).
 
@@ -57,59 +98,22 @@ board_evaluation([CP,CB,_], E):-
     ((CP = b, BAK > 0) -> PWAK is WAK - 1; PWAK is WAK),
     E is WM + 0.25*(WKS/WM) + 0.25*PWAK - BM - 0.25*(BKS/BM) - 0.25*PBAK.
 
-% attacking_knights(+GameState, -NumberOfAttacks)
-attacking_knights([P,CB,_], NA):-
-    findall(C-R, nth0_nested(R, C, CB, P), K),
-    next_to_play(P, NP), 
-    filter_attacking_knights([P,CB,_], NP, K, [], FM),
-    length(FM, NA).
 
-% to_opponent_square_aux(+GameState, +NextPlayer, +KnightPositions, +Acc, -FilteredMoves)
-filter_attacking_knights(_, _, [], FM, FM).
-filter_attacking_knights([CP,CB,_], NP, [SC-SR|T], A, FM):-
-    findall(EC-ER, (can_move([CP,CB,_], SC-SR-EC-ER), nth0_nested(ER,EC,CB,NP)), L),
-    length(L, LS),
-    LS > 0, !,
-    filter_attacking_knights([CP,CB,_], NP, T, [SC-SR|A], FM).
-filter_attacking_knights([CP,CB,_], NP, [_|T], A, FM):-
-    filter_attacking_knights([CP,CB,_], NP, T, A, FM).
-
-% map_center_square_hops(+BoardSize, +PositionList, -Hops)
-map_center_square_hops(BS, L, H):-
-    center_square(BS, CR, CC),
-    map_center_square_hops_aux(CR-CC, BS, L, [], H).
-
-% map_center_square_hops_aux(+CenterSquare, +BoardSize, +PositionList, +Acc, -Hops)
-map_center_square_hops_aux(_, _, [], H, H).
-map_center_square_hops_aux(CR-CC, BS, [C-R|T], A, H):-
-    knight_hops(BS, C-R, CR-CC, N),
-    map_center_square_hops_aux(CR-CC, BS, T, [N|A], H).
-
-% knight_position_score(+CenterHops, -Score)
-knight_position_score(0, 1).
-knight_position_score(H, S):-
-    H > 0,
-    S is 1/H.
+%%%% Computer algortihms %%%%
 
 % choose_move(+GameState, +Level, -Move)
 choose_move([CP,CB,_], 1, M):-
     valid_moves([CP,CB,_], L),
     random_member(M, L).
-choose_move([CP,CB,_], 2, M):-
-    valid_moves([CP,CB,_], L),
-    map_evaluate([CP,CB,_], L, E),
-    min_element_index(E, I),
-    nth0(I, L, M).
+choose_move([CP,CB,_], L, M):-
+    L > 1,
+    D is L - 2,
+    minimax(D, CP, [CP,CB,_], M).
 
-% map_evaluate(+GameState, +Moves, +Evaluations)
-map_evaluate([CP,CB,_], [H|T], E):-
-    map_evaluate_aux([CP,CB,_], [H|T], [], RE),
-    reverse(RE,E).
-
-% map_evaluate_aux(+GameState, +Moves, +Acc, +Evaluations)
-map_evaluate_aux(_, [], E, E).
-map_evaluate_aux([CP,CB,_], [H|T], A, E):-
-    H = SC-SR-EC-ER,
-    move([CP,CB,_], SC-SR-EC-ER, [NP, NB, OB]),
-    value([NP, NB, OB], NP, V),
-    map_evaluate_aux([CP,CB,_], T, [V|A], E).
+% minimax(+Depth, +FirstPlayer, +GameState, -Move)
+minimax(0, FP, [CP,CB,_], M):-
+    valid_moves([CP,CB,_], ML),
+    maplist(move([CP,CB,_]), ML, NGS),
+    maplist(value(FP), NGS, EL),
+    max_element_index(EL, I),
+    nth0(I, ML, M).
