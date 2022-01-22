@@ -115,9 +115,10 @@ minimax(D, [CP,CB,_], M):-
     minimax_aux(D, [CP,CB,_], M-_).
 
 % minimax(+Depth, +GameState, -MoveScore)
-minimax_aux(_, [CP,CB,OB], _-E):-
-    game_over([CP,CB,OB],_),!, % cut branch if game is over
-    value(CP, [CP,CB,OB], E).
+minimax_aux(D, [CP,CB,OB], _-E):-
+    game_over([CP,CB,OB],_), !, % cut branch if game is over
+    value(CP, [CP,CB,OB], E_),
+    (D mod 2 =:= 0 -> E is -E_; E is E_). % simulate this being the base case
 minimax_aux(D, [CP,CB,OB], M-E):-
     D > 1, D mod 2 =\= 0, % only jump if base case is same player
     value(CP, [CP,CB,OB], E_),
@@ -136,11 +137,11 @@ minimax_aux(D, [CP,CB,_], M-E):-
     valid_moves([CP,CB,_], ML_),
     maplist(move([CP,CB,_]), ML_, NGS),
     maplist(minimax_aux(ND), NGS, MSL),
-    maplist(filter_scores_minimax, MSL, SL),
+    maplist(filter_score_minimax, MSL, SL),
     % odd depths lead to us being the maximizer at the base case
     % even depths lead to the opponent
     (D mod 2 =:= 0 -> min_element(SL, I, E); max_element(SL, I, E)),
     nth0(I, ML_, M).
 
-% filter_scores_minimax(+MoveScore, -Score)
-filter_scores_minimax(_-E, E).
+% filter_score_minimax(+MoveScore, -Score)
+filter_score_minimax(_-E, E).
