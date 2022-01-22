@@ -1,4 +1,5 @@
 :-use_module(library(lists)).
+:-use_module(library(random)).
 
 % replicate_nested(?Height, ?Width, ?Elem, ?List)
 replicate_nested(H, W, E, L):-
@@ -26,3 +27,21 @@ replace_nested(R, C, L, E, NL):-
     replace(C, F, E, NF),
     nth0(R, L, _, K),
     nth0(R, NL, NF, K).
+
+% max_element(+List, -Index, -Element)
+max_element([H|T], I, E):-
+    element_aux([H|T], >, H, 0, 0, I, E).
+
+% max_element(+List, -Index, -Element)
+min_element([H|T], I, E):-
+    element_aux([H|T], <, H, 0, 0, I, E).
+
+% element_aux(+List, +Op, +CurrBest, +CurrIndex, +CurrBestIndex, -Index, -Element)
+element_aux([], _, CM, _, CMI, CMI, CM).
+element_aux([H|T], OP, CM, CI, _, I, E):-
+    call(OP,H,CM), !,
+    NI is CI + 1,
+    element_aux(T, OP, H, NI, CI, I, E).
+element_aux([_|T], OP, CM, CI, CMI, I, E):-
+    NI is CI + 1,
+    element_aux(T, OP, CM, NI, CMI, I, E).

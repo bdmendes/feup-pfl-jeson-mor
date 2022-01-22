@@ -20,16 +20,30 @@ move([CP,CB,_], SC-SR-EC-ER, [NP,NB,CB]):-
 % can_move(+GameState, ?Move)
 can_move([CP,CB,_], SC-SR-EC-ER):-
     nth0_nested(SR, SC, CB, CP),
-    nth0_nested(ER, EC, CB, _),
+    nth0_nested(ER, EC, CB, NS),
+    NS \= CP,
     knight_move(SC-SR-EC-ER).
 
-% parse_move(+AlgebraicNotation, +Board, -Move)
+% parse_move(?AlgebraicNotation, +Board, ?Move)
 parse_move(SS-ES, B, SC-SR-EC-ER):-
+    nonvar(SS), nonvar(ES), !,
     length(B, BS),
     atom_chars(SS, SS_),
     atom_chars(ES, ES_),
     parse_square(SS_, BS, SC-SR),
     parse_square(ES_, BS, EC-ER).
+parse_move(SS-ES, B, SC-SR-EC-ER):-
+    length(B,BS),
+    char_code('a', AC),
+    char_code('1', ZC),
+    ISR is BS - SR - 1,
+    IER is BS - ER - 1,
+    SCC is AC + SC,
+    ECC is AC + EC,
+    SRC is ZC + ISR,
+    ERC is ZC + IER,
+    atom_codes(SS, [SCC,SRC]),
+    atom_codes(ES, [ECC,ERC]).
 
 % parse_square(+AlgebraicNotation, +BoardSize, ?Square)
 parse_square([H|T], BS, C-R):-
@@ -60,6 +74,7 @@ game_over([CP,CB,_], W):-
     valid_moves([CP,CB,_], []),!,
     next_to_play(CP,W).
 game_over([_,CB,OB], W):-
+    nonvar(CB), nonvar(OB),
     length(CB, BS),
     center_square(BS, R, C),
     nth0_nested(R, C, CB, o),
