@@ -17,7 +17,7 @@ display_game([CP,B,OB]):-
     write('\n\n'),
     board_evaluation([CP,B,OB],E),
     format('Computer board evaluation: ~2F\n', [E]),
-    choose_move([CP,B,_], 2, M),
+    choose_move([CP,B,_], 4, M),
     parse_move(PM,B,M),
     format('Computer would play: ~w', [PM]),nl,
     (CP = b -> write('Black to play\n\n'); write('White to play\n\n')).

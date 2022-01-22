@@ -28,16 +28,20 @@ replace_nested(R, C, L, E, NL):-
     nth0(R, L, _, K),
     nth0(R, NL, NF, K).
 
-% max_element_index(+List, -Index)
-max_element_index([H|T], I):-
-    max_element_index_aux([H|T], H, 0, 0, I).
+% max_element(+List, -Index, -Element)
+max_element([H|T], I, E):-
+    element_aux([H|T], >, H, 0, 0, I, E).
 
-% max_element_index_aux(+List, +CurrMax, +CurrIndex, +CurrMaxIndex, -Index)
-max_element_index_aux([], _, _, CMI, CMI).
-max_element_index_aux([H|T], CM, CI, _, I):-
-    H > CM, !,
+% max_element(+List, -Index, -Element)
+min_element([H|T], I, E):-
+    element_aux([H|T], <, H, 0, 0, I, E).
+
+% element_aux(+List, +Op, +CurrBest, +CurrIndex, +CurrBestIndex, -Index, -Element)
+element_aux([], _, CM, _, CMI, CMI, CM).
+element_aux([H|T], OP, CM, CI, _, I, E):-
+    call(OP,H,CM), !,
     NI is CI + 1,
-    max_element_index_aux(T, H, NI, CI, I).
-max_element_index_aux([_|T], CM, CI, CMI, I):-
+    element_aux(T, OP, H, NI, CI, I, E).
+element_aux([_|T], OP, CM, CI, CMI, I, E):-
     NI is CI + 1,
-    max_element_index_aux(T, CM, NI, CMI, I).
+    element_aux(T, OP, CM, NI, CMI, I, E).

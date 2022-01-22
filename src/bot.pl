@@ -107,13 +107,40 @@ choose_move([CP,CB,_], 1, M):-
     random_member(M, L).
 choose_move([CP,CB,_], L, M):-
     L > 1,
-    D is L - 2,
-    minimax(D, CP, [CP,CB,_], M).
+    D is L - 1,
+    minimax(D, [CP,CB,_], M).
 
-% minimax(+Depth, +FirstPlayer, +GameState, -Move)
-minimax(0, FP, [CP,CB,_], M):-
+% minimax(+Depth, +GameState, -Move)
+minimax(D, [CP,CB,_], M):-
+    minimax_aux(D, [CP,CB,_], M-_).
+
+% minimax(+Depth, +GameState, -MoveScore)
+minimax_aux(_, [CP,CB,OB], _-E):-
+    game_over([CP,CB,OB],_),!, % cut branch if game is over
+    value(CP, [CP,CB,OB], E).
+minimax_aux(D, [CP,CB,OB], M-E):-
+    D > 1, D mod 2 =\= 0, % only jump if base case is same player
+    value(CP, [CP,CB,OB], E_),
+    E_ > 2, !, % cut branch if static board evaluation is obvious
+    minimax_aux(1, [CP,CB,OB], M-E).
+minimax_aux(1, [CP,CB,_], M-E):-
     valid_moves([CP,CB,_], ML),
     maplist(move([CP,CB,_]), ML, NGS),
-    maplist(value(FP), NGS, EL),
-    max_element_index(EL, I),
-    nth0(I, ML, M).
+    maplist(value(CP), NGS, EL),
+    max_element(EL, I, _), % depth 1 is always the maximizer
+    nth0(I, ML, M),
+    nth0(I, EL, E).
+minimax_aux(D, [CP,CB,_], M-E):-
+    D > 1,
+    ND is D - 1,
+    valid_moves([CP,CB,_], ML_),
+    maplist(move([CP,CB,_]), ML_, NGS),
+    maplist(minimax_aux(ND), NGS, MSL),
+    maplist(filter_scores_minimax, MSL, SL),
+    % odd depths lead to us being the maximizer at the base case
+    % even depths lead to the opponent
+    (D mod 2 =:= 0 -> min_element(SL, I, E); max_element(SL, I, E)),
+    nth0(I, ML_, M).
+
+% filter_scores_minimax(+MoveScore, -Score)
+filter_scores_minimax(_-E, E).

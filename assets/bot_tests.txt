@@ -1,9 +1,17 @@
-Greedy bot. Take at center
+Take at center
 choose_move([w,[
-         [o, b, b, o, o],
+         [o, b, o, o, o],
          [o, o, o, o, o],
          [o, o, b, o, o],
          [w, o, o, o, o],
-         [w, o, o, o, w]
+         [w, o, o, o, o]
      ],_], 2, M).
 
+Small tree scenario: must move to center, capturing will lead to black winning
+choose_move([w,[
+         [o, b, o],
+         [o, o, o],
+         [o, o, b],
+         [w, o, o],
+         [w, o, o]
+     ],_], 5, M).
