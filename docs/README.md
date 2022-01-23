@@ -358,7 +358,7 @@ minimax_aux(D, [CP,CB,OB], M-E):-
     minimax_aux(1, [CP,CB,OB], M-E).
 ```
 
-This has proven to have little effect on game openings, where the position is equal and the game is far from won for either side. A possible improvement is the use of alpha-beta pruning, an already explored topic in the chess programming community we would have liked to explore if we had find the time to do so.
+This has proven to have little effect on game openings, where the position is equal and the game is far from won for either side. A possible improvement is the use of alpha-beta pruning, an [already explored topic in the chess programming](https://umm-csci.github.io/senior-seminar/seminars/spring2017/marckel.pdf) community we would have liked to explore if we had find the time to do so.
 
 Nevertheless, the reader can play with our raw minimax implementation, with low depths (the default from the menu is 3) and small boards, or not, if they can grab a cup of coffee.
 
