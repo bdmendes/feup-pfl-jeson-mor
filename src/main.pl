@@ -41,6 +41,7 @@ play:-
     retractall(player(_,_)),
     retractall(state(_)),
     menu,
+    skip_line,
     repeat,
     loop.
 
@@ -66,8 +67,14 @@ try_move([CP,CB,OB], M, NGS):-
     (move([CP,CB,OB], M, NGS)-> (write('Valid move!\n'), !) ; (write('Invalid move!\n'), fail)).
 
 make_a_move([CP,CB,OB], NGS):-
+    player(CP, 4),
+    choose_move([CP,CB,OB], 4, M),
+    display_computer_move([CP,CB,OB], M),
+    skip_line,
+    try_move([CP,CB,OB], M, NGS), !.
+
+make_a_move([CP,CB,OB], NGS):-
     player(CP, L),
-    L > 1,
     D is L -1,
     choose_move([CP,CB,OB], D, M),
     display_computer_move([CP,CB,OB], M),
@@ -79,4 +86,5 @@ make_a_move([CP,CB,OB], NGS):-
     display_computer_hint([CP,CB,OB]),
     repeat,
     read_move([CP,CB,OB], M),
-    try_move([CP,CB,OB], M, NGS), !.
+    try_move([CP,CB,OB], M, NGS),
+    skip_line, !.
