@@ -67,13 +67,6 @@ try_move([CP,CB,OB], M, NGS):-
     (move([CP,CB,OB], M, NGS)-> (write('Valid move!\n'), !) ; (write('Invalid move!\n'), fail)).
 
 make_a_move([CP,CB,OB], NGS):-
-    player(CP, 1),
-    display_computer_hint([CP,CB,OB]),
-    repeat,
-    read_move([CP,CB,OB], M),
-    try_move([CP,CB,OB], M, NGS), !.
-
-make_a_move([CP,CB,OB], NGS):-
     player(CP, L),
     L > 1,
     D is L -1,
@@ -81,3 +74,12 @@ make_a_move([CP,CB,OB], NGS):-
     display_computer_move([CP,CB,OB], M),
     skip_line,
     try_move([CP,CB,OB], M, NGS).
+
+make_a_move([CP,CB,OB], NGS):-
+    player(CP, 1),
+    display_computer_hint([CP,CB,OB]),
+    repeat,
+    read_move([CP,CB,OB], M),
+    try_move([CP,CB,OB], M, NGS), !.
+
+
