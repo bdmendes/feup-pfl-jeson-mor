@@ -33,7 +33,7 @@ menu:-
     assertz(player(w, MW)),
     get_player_mode(b, MB),
     assertz(player(b, MB)),
-    get_board_size(BS, 11),
+    get_board_size(BS, 9),
     initial_state(BS, GS),
     assertz(state(GS)).
 
