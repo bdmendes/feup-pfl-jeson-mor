@@ -128,7 +128,7 @@ display_board_size_message(M):-
 display_computer_hint([CP,CB,_]):-
     choose_move([CP,CB,_], 2, M),
     parse_move(PM,CB,M),
-    format('Computer would play: ~w', [PM]),nl.
+    format('Greedy computer would play: ~w', [PM]),nl.
 
 %% display_computer_move(+GameState, +Move)
 %
