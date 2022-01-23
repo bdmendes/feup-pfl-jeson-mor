@@ -31,6 +31,18 @@ display_board([H|T]):-
 
 % display_row(+Row)
 display_row([]).
+display_row([w|T]):-
+    put_char(' '),
+    switch_color(blue),
+    put_char('w'),
+    switch_color(default),
+    display_row(T), !.
+display_row([b|T]):-
+    put_char(' '),
+    switch_color(red),
+    put_char('b'),
+    switch_color(default),
+    display_row(T), !.
 display_row([H|T]):-
     put_char(' '),
     put_char(H),
@@ -62,10 +74,10 @@ display_greeting:-
 
 
 display_white_knights_message:-
-    write(' Chose the type of player for the white knights: \n').
+    write(' Choose the type of player for white: \n').
 
 display_black_knights_message:-
-    write(' Chose the type of player for the black knights: \n').
+    write(' Choose the type of player for black: \n').
 
 display_player_modes(K):-
     write('\n'),
@@ -95,3 +107,7 @@ display_winner_greeting(Winner):-
     (Winner == 'w'-> W = 'White' ; W = 'Black'),
     format("       ~w has won the game! Congratulations!\n", [W]),
     display_greeting, nl, nl.
+
+switch_color(blue):- write('\33\[1;34m').
+switch_color(red):- write('\33\[1;31m').
+switch_color(default):- write('\33\[0m').

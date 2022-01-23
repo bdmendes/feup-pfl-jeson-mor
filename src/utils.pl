@@ -39,6 +39,10 @@ min_element([H|T], I, E):-
 % element_aux(+List, +Op, +CurrBest, +CurrIndex, +CurrBestIndex, -Index, -Element)
 element_aux([], _, CM, _, CMI, CMI, CM).
 element_aux([H|T], OP, CM, CI, _, I, E):-
+    H = CM, random_member(1, [0,1]), !,
+    NI is CI + 1,
+    element_aux(T, OP, H, NI, CI, I, E).
+element_aux([H|T], OP, CM, CI, _, I, E):-
     call(OP,H,CM), !,
     NI is CI + 1,
     element_aux(T, OP, H, NI, CI, I, E).
