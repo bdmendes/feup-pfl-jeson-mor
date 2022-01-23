@@ -1,7 +1,7 @@
 :-ensure_loaded('utils.pl').
 
 % initial_state(+Size, +FirstToPlay, -GameState)
-initial_state(S, FP, [FP,B,B]):-
+initial_state(S, [w,B,B]):-
     member(S, [5,7,9]),
     (FP = w; FP = b),
     MS is S - 2,
