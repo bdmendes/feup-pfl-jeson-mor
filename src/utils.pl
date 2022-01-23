@@ -86,7 +86,8 @@ min_element([H|T], I, E):-
 
 %% element_aux(+List, +Op, +CurrBest, +CurrIndex, +CurrBestIndex, -Index, -Element)
 %
-% Auxiliary function to find the max/min elements in a list
+% Auxiliary function to find the max/min elements in a list. In case of multiple equal 
+%   max/min elements, chooses a random one.
 %
 % @param List
 % @param Op
