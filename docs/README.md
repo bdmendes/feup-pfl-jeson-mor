@@ -173,6 +173,8 @@ When asking for atom representations this verification is made to ensure the inp
     catch(char_code(_, Something), _, fail),
 ```
 
+The user must finish all inputs with `.` (a dot) so that it gets parsed.
+
 #### Movement parser
 
 Moves are read from input using algebraic notation, as in chess (start square to end square; eg. a1-b3), and then parsed to an internal move representation, where the column and row are treated to match the board's list actual position. The internal representation of a position is given by `Column-Row` (The row with index 0 in the board is the first row displayed). The representation of a move is given by `StartPosition-EndPosition`.
@@ -195,7 +197,7 @@ Game settings are diplayed as such:
  Jose Costa                  up201907216@edu.fe.up.pt
 
  ( Input the option number to select it )
- Choose the type of player for the white knights:
+ Choose the type of player for White:
        1. Human Player
        2. Sloppy Computer
        3. Greedy Computer
@@ -203,13 +205,13 @@ Game settings are diplayed as such:
 |: <your-input>.
 
  ( Input the option number to select it )
- Choose the type of player for the black knights:
+ Choose the type of player for Black:
        1. Human Player
        2. Sloppy Computer
        3. Greedy Computer
        4. Smart Computer
 |: <your-input>.
- Input the desired board size (max.9, should be odd)
+ Input the desired board size (max.9, must be odd)
 |: <your-input>.
 
 ```
@@ -233,22 +235,22 @@ Computer board evaluation: -1.07
 White to play
 ```
 
-The board display predicate, `display_game(+GameState)`, is flexible printing boards as big as the boards inside the game state. The white pieces are represented in blue and the black pieces in red, whem in game.
+The board display predicate, `display_game(+GameState)`, is flexible printing boards as big as the boards inside the game state. The white pieces are represented in blue and the black pieces in red, when in game.
 
 Following it is displayed a prompt that varies depending on the player nature (Human or Computer)
 Human:
 
 ```
-Computer would play: c1-a2
+Greedy Computer would play: c1-a2
+( Input your move in algebraic notation as above )
 |: <your-input>.
-Valid move! / Invalid move|
 ```
 
 Computer:
 
 ```
 Computer will play: d1-c3
-(Press any key)
+(Press return)
 ```
 
 The games finishes with the following display:
@@ -360,7 +362,9 @@ minimax_aux(D, [CP,CB,OB], M-E):-
 
 This has proven to have little effect on game openings, where the position is equal and the game is far from won for either side. A possible improvement is the use of alpha-beta pruning, an [already explored topic in the chess programming](https://umm-csci.github.io/senior-seminar/seminars/spring2017/marckel.pdf) community we would have liked to explore if we had find the time to do so.
 
-Nevertheless, the reader can play with our raw minimax implementation, with low depths (the default from the menu is 3) and small boards, or not, if they can grab a cup of coffee.
+Nevertheless, the reader can play with our raw minimax implementation, with low depths (the default from the menu is 3) and small boards, or not, if they can grab a cup of coffee. A computer vs computer game is also a fun experience, with both bots eventually reaching a dead end and not engaging in challenges they know they cannot calculate (this would be a draw in chess, but no such rule exists for `Jeson Mor`).
+
+As a last note, the reader also gets a quick hint from the greedy computer when playing in human mode, in case they feel lost.
 
 ## Execution flow
 
@@ -379,4 +383,4 @@ For imperative minded programmers, Prolog proves to be an healthy challenge, for
 
 ### Known Issues
 
--   Sensitive input - Our mechanism for treating input isn't fool-proof. Should be fixed for improved user experience.
+-   Color output in Windows - We used ANSI espace codes for outputting colored pieces, which may not be available in proprietary or old Windows consoles.

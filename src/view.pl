@@ -118,7 +118,7 @@ display_player_modes(K):-
 %
 % @param Max board size
 display_board_size_message(M):-
-    format(" Input the desired board size ( max.~w, should be odd )\n",[M]).
+    format(" Input the desired board size ( max.~w, must be odd )\n",[M]).
 
 %% display_computer_hint(+GameState)
 %
@@ -128,7 +128,8 @@ display_board_size_message(M):-
 display_computer_hint([CP,CB,_]):-
     choose_move([CP,CB,_], 2, M),
     parse_move(PM,CB,M),
-    format('Greedy computer would play: ~w', [PM]),nl.
+    format('Greedy Computer would play: ~w', [PM]),nl,
+    write('( Input your move in algebraic notation as above )'),nl.
 
 %% display_computer_move(+GameState, +Move)
 %
@@ -138,7 +139,7 @@ display_computer_hint([CP,CB,_]):-
 display_computer_move([_,B,_], M):-
     parse_move(PM,B,M),
     format('Computer will play: ~w\n', [PM]),
-    write('(Press any key)\n').
+    write('(Press return)\n').
 
 %% display_winner_greeting(+Winner)
 %
