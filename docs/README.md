@@ -231,7 +231,7 @@ The board is displayed in the following configuration:
 1 | w w o w w o o w o |
   ---------------------
 
-Computer board evaluation: -1.07
+Static board evaluation: -1.07
 White to play
 ```
 

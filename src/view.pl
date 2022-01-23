@@ -20,7 +20,7 @@ display_game([CP,B,OB]):-
     display_separator(BW),
     write('\n\n'),
     board_evaluation([CP,B,OB],E),
-    format('Computer board evaluation: ~2F\n', [E]),
+    format('Static board evaluation: ~2F\n', [E]),
     (CP = b -> write('Black to play\n\n'); write('White to play\n\n')).
 
 %% display_board(+Board)
