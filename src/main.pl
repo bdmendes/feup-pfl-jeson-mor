@@ -51,10 +51,9 @@ loop:-
     retractall(state(_)),
     retractall(player(_,_)).
 loop:-
-    state(GS),
+    retract(state(GS)),
     display_game(GS),
     make_a_move(GS, NGS),
-    retract(state(_)),
     assertz(state(NGS)),
     fail.
 
@@ -81,5 +80,3 @@ make_a_move([CP,CB,OB], NGS):-
     repeat,
     read_move([CP,CB,OB], M),
     try_move([CP,CB,OB], M, NGS), !.
-
-
