@@ -214,7 +214,7 @@ minimax_aux(D, [CP,CB,OB], _-E):-
 minimax_aux(D, [CP,CB,OB], M-E):-
     D > 1, D mod 2 =\= 0, % only jump if base case is same player
     value(CP, [CP,CB,OB], E_),
-    E_ > 2, !, % cut branch if static board evaluation is obvious
+    (E_ > 2; E_ < -2), !, % cut branch if static board evaluation is obvious
     minimax_aux(1, [CP,CB,OB], M-E).
 minimax_aux(1, [CP,CB,_], M-E):-
     valid_moves([CP,CB,_], ML),
