@@ -232,7 +232,11 @@ minimax_aux(D, [CP,CB,_], M-E):-
     maplist(filter_score_minimax, MSL, SL),
     % odd depths lead to us being the maximizer at the base case
     % even depths lead to the opponent
-    (D mod 2 =:= 0 -> min_element(SL, I, E); max_element(SL, I, E)),
+    (D mod 2 =:= 0 -> min_element(SL, I, E2); max_element(SL, I, E2)),
+    nth0(I, NGS, GS_),
+    next_to_play(CP, NP),
+    (D mod 2 =:= 0 -> value(NP, GS_, E1); value(CP, GS_, E1)),
+    E is E1 + E2,
     nth0(I, ML_, M).
 
 % filter_score_minimax(+MoveScore, -Score)
