@@ -197,52 +197,56 @@ choose_move([CP,CB,_], L, M):-
 % @param Depth of the algorithm
 % @param Game state
 % @param Resultant move
-minimax(D, [CP,CB,_], M):-
-    minimax_aux(D, [CP,CB,_], M-_).
+minimax(D, [CP,CB,OB], M):-
+    write(D),nl,
+    retractall(minimax_alpha(_)),
+    retractall(minimax_beta(_)),
+    asserta(minimax_alpha(-9999)),
+    asserta(minimax_beta(9999)),
+    minimax_aux(D, [CP,CB,OB], M-_).
 
-%% minimax_aux(+Depth, +GameState, -MoveScore)
-%
-% Executes the minimax algorithm itself
-%
-% @param Depth of the algorithm
-% @param Game state
-% @param Resultant move and corresponding score
-minimax_aux(D, [CP,CB,OB], _-E):-
-    game_over([CP,CB,OB],_), !, % cut branch if game is over
-    value(CP, [CP,CB,OB], E_),
-    (D mod 2 =:= 0 -> E is -E_; E is E_). % simulate this being the base case
-minimax_aux(D, [CP,CB,OB], M-E):-
-    D > 1, D mod 2 =\= 0, % only jump if base case is same player
-    value(CP, [CP,CB,OB], E_),
-    (E_ > 2; E_ < -2), !, % cut branch if static board evaluation is obvious
-    minimax_aux(1, [CP,CB,OB], M-E).
-minimax_aux(1, [CP,CB,_], M-E):-
-    valid_moves([CP,CB,_], ML),
-    maplist(move([CP,CB,_]), ML, NGS),
-    maplist(value(CP), NGS, EL),
-    max_element(EL, I, _), % depth 1 is always the maximizer
-    nth0(I, ML, M),
-    nth0(I, EL, E).
-minimax_aux(D, [CP,CB,_], M-E):-
-    D > 1,
-    ND is D - 1,
-    valid_moves([CP,CB,_], ML_),
-    maplist(move([CP,CB,_]), ML_, NGS),
-    maplist(minimax_aux(ND), NGS, MSL),
-    maplist(filter_score_minimax, MSL, SL),
-    % odd depths lead to us being the maximizer at the base case
-    % even depths lead to the opponent
-    (D mod 2 =:= 0 -> min_element(SL, I, E2); max_element(SL, I, E2)),
-    nth0(I, NGS, GS_),
-    next_to_play(CP, NP),
-    (D mod 2 =:= 0 -> value(NP, GS_, E1); value(CP, GS_, E1)),
-    E is E1 + E2,
-    nth0(I, ML_, M).
+%% base case: game is over
+minimax_aux(_, [CP, CB, OB], _-E):-
+    game_over([CP, CB, OB], _), !,
+    board_evaluation([CP, CB, OB], E).
 
-% filter_score_minimax(+MoveScore, -Score)
-%
-% Filters a move score
-%
-% @param Resultant move and corresponding score
-% @param Score only
-filter_score_minimax(_-E, E).
+%% base case: depth 0
+minimax_aux(0, [CP, CB, OB], _-E):-
+    board_evaluation([CP, CB, OB], E).
+
+%% alpha beta pruning
+minimax_aux(Depth, [CP, CB, OB], _-E):-
+    Depth > 0,
+    board_evaluation([CP, CB, OB], E),
+    minimax_alpha(Alpha),
+    minimax_beta(Beta),
+    %%write('trying\n'),
+    (CP = w -> E =< Alpha; E >= Beta), !,
+    write('pruning!\n'),
+    format('D: ~w, CP: ~w, Beta: ~w, Alpha: ~w, E: ~w\n\n',[Depth, CP, Beta, Alpha, E]).
+
+%% recursive case
+minimax_aux(Depth, [CP, CB, _], M-E):-
+    Depth > 0,
+    valid_moves([CP, CB, _], ValidMoves),
+    maplist(move([CP, CB, _]), ValidMoves, NewGameStates),
+    NewDepth is Depth - 1,
+    maplist(minimax_aux(NewDepth), NewGameStates, Evals_),
+    maplist(filter_eval, Evals_, Evals),
+    (Depth = 5 -> (write(Evals),nl,write(ValidMoves),nl); write(' ')),
+    (CP = w -> max_element(Evals, Index, E); min_element(Evals, Index, E)),
+    nth0(Index, ValidMoves, M),
+    minimax_alpha(Alpha),
+    minimax_beta(Beta),
+    (CP = w -> 
+        (
+            retractall(minimax_alpha(_)),
+            (E > Alpha -> asserta(minimax_alpha(E)); asserta(minimax_alpha(Alpha)))
+        ); 
+        (
+            retractall(minimax_beta(_)),
+            (E < Beta -> asserta(minimax_beta(E)); asserta(minimax_beta(Beta)))
+        )
+    ).
+
+filter_eval(_-E,E).
