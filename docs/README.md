@@ -6,8 +6,8 @@
 
 ### Jeson Mor_1
 
--   Bruno Mendes - [up201906166](mailto:up201906166@edu.fe.up.pt)
--   José Costa - [up201907216](mailto:201907216@edu.fe.up.pt)
+- Bruno Mendes - [up201906166](mailto:up201906166@edu.fe.up.pt)
+- José Costa - [up201907216](mailto:201907216@edu.fe.up.pt)
 
 ## Contributions
 
@@ -289,9 +289,9 @@ The `knight_move(+Move)` predicate generates all the possible moves or possible 
 
 For our bot (non random) to find a good move, it was necessary to implement a form of evaluating a position: no memory could hold the hundreds of millions of variations a game can have until its end. Chess engines like `Stockfish` evaluate a position by many criteria, retrieving a relative score:
 
--   \<0: black advantage (the lesser the better)
--   Around 0: equality
--   \>0: white advantage (the greater the better)
+- \<0: black advantage (the lesser the better)
+- Around 0: equality
+- \>0: white advantage (the greater the better)
 
 We imitated this behaviour in our `board_evaluation` predicate. Let's check it:
 
@@ -311,9 +311,9 @@ board_evaluation([CP,CB,_], E):-
 
 We evaluated a position by three criteria:
 
--   Material difference: the most obvious and most valuable. A player with more pieces holds more chances to win the game.
--   Tactical opportunity: the number of knights each player has attacking at least an opponent knight. For example, in a position where a white knight is attacked by two different black knights, black is likely to win the exchange and thus scores better in this criteria. Also, in a challenge of pieces, it's like the current player held one more knight, because it's the first to move.
--   Strategic placement: knights are stronger close to the center since they can reach more squares and possibly get to the center square and leave, winning the game.
+- Material difference: the most obvious and most valuable. A player with more pieces holds more chances to win the game.
+- Tactical opportunity: the number of knights each player has attacking at least an opponent knight. For example, in a position where a white knight is attacked by two different black knights, black is likely to win the exchange and thus scores better in this criteria. Also, in a challenge of pieces, it's like the current player held one more knight, because it's the first to move.
+- Strategic placement: knights are stronger close to the center since they can reach more squares and possibly get to the center square and leave, winning the game.
 
 ### Algorithms
 
@@ -383,4 +383,4 @@ For imperative minded programmers, Prolog proves to be an healthy challenge, for
 
 ### Known Issues
 
--   Color output in Windows - We used ANSI espace codes for outputting colored pieces, which may not be available in proprietary or old Windows consoles.
+- Color output in Windows - We used ANSI espace codes for outputting colored pieces, which may not be available in proprietary or old Windows consoles.

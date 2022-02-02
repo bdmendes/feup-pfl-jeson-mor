@@ -166,10 +166,11 @@ board_evaluation([CP,CB,_], E):-
     knights_position_score(b, CB, BKS),
     attacking_knights([w,CB,_], WAK),
     attacking_knights([b,CB,_], BAK),
-    ((CP = w, WAK > 0) -> PBAK is BAK - 1; PBAK is BAK),
-    ((CP = b, BAK > 0) -> PWAK is WAK - 1; PWAK is WAK),
-    E is WM + 0.25*(WKS/WM) + 0.25*PWAK - BM - 0.25*(BKS/BM) - 0.25*PBAK.
-
+    (CP = w ->
+        (PWAK is WAK + 0.2, PBAK is BAK);
+        (PBAK is BAK + 0.2, PWAK is WAK)
+    ),
+    E is WM + 0.1*(WKS/WM) + 0.2*PWAK - BM - 0.1*(BKS/BM) - 0.2*PBAK.
 
 %%%% Computer algortihms %%%%
 
@@ -197,52 +198,38 @@ choose_move([CP,CB,_], L, M):-
 % @param Depth of the algorithm
 % @param Game state
 % @param Resultant move
-minimax(D, [CP,CB,_], M):-
-    minimax_aux(D, [CP,CB,_], M-_).
+minimax(D, [CP,CB,OB], M):-
+    minimax_aux(D, -9999, 9999, [CP,CB,OB], M-_).
 
-%% minimax_aux(+Depth, +GameState, -MoveScore)
-%
-% Executes the minimax algorithm itself
-%
-% @param Depth of the algorithm
-% @param Game state
-% @param Resultant move and corresponding score
-minimax_aux(D, [CP,CB,OB], _-E):-
-    game_over([CP,CB,OB],_), !, % cut branch if game is over
-    value(CP, [CP,CB,OB], E_),
-    (D mod 2 =:= 0 -> E is -E_; E is E_). % simulate this being the base case
-minimax_aux(D, [CP,CB,OB], M-E):-
-    D > 1, D mod 2 =\= 0, % only jump if base case is same player
-    value(CP, [CP,CB,OB], E_),
-    (E_ > 2; E_ < -2), !, % cut branch if static board evaluation is obvious
-    minimax_aux(1, [CP,CB,OB], M-E).
-minimax_aux(1, [CP,CB,_], M-E):-
-    valid_moves([CP,CB,_], ML),
-    maplist(move([CP,CB,_]), ML, NGS),
-    maplist(value(CP), NGS, EL),
-    max_element(EL, I, _), % depth 1 is always the maximizer
-    nth0(I, ML, M),
-    nth0(I, EL, E).
-minimax_aux(D, [CP,CB,_], M-E):-
-    D > 1,
-    ND is D - 1,
-    valid_moves([CP,CB,_], ML_),
-    maplist(move([CP,CB,_]), ML_, NGS),
-    maplist(minimax_aux(ND), NGS, MSL),
-    maplist(filter_score_minimax, MSL, SL),
-    % odd depths lead to us being the maximizer at the base case
-    % even depths lead to the opponent
-    (D mod 2 =:= 0 -> min_element(SL, I, E2); max_element(SL, I, E2)),
-    nth0(I, NGS, GS_),
-    next_to_play(CP, NP),
-    (D mod 2 =:= 0 -> value(NP, GS_, E1); value(CP, GS_, E1)),
-    E is E1 + E2,
-    nth0(I, ML_, M).
+%% base case: game is over
+minimax_aux(Depth, _, _, [CP, CB, OB], _-PE):-
+    game_over([CP, CB, OB], _), !,
+    board_evaluation([CP, CB, OB], E),
+    (E > 0 -> PE is E + Depth; PE is E - Depth). % prefer quicker game wins
 
-% filter_score_minimax(+MoveScore, -Score)
-%
-% Filters a move score
-%
-% @param Resultant move and corresponding score
-% @param Score only
-filter_score_minimax(_-E, E).
+%% base case: depth 0
+minimax_aux(0, _, _, [CP, CB, OB], _-E):-
+    board_evaluation([CP, CB, OB], E).
+
+%% recursive case
+minimax_aux(Depth, Alpha, Beta, [CP, CB, _], M-E):-
+    Depth > 0,
+    valid_moves([CP, CB, _], ValidMoves),
+    maplist(move([CP, CB, _]), ValidMoves, NewGameStates),
+    NewDepth is Depth - 1,
+    map_minimax(CP, NewDepth, Alpha, Beta, NewGameStates, [], Evals_),
+    reverse(Evals_, Evals),
+    (CP = w -> max_element(Evals, Index, E); min_element(Evals, Index, E)),
+    nth0(Index, ValidMoves, M).
+
+map_minimax(_, _, Alpha, Beta, _, Acc, Acc):-
+    Alpha >= Beta, !.
+map_minimax(_, _, _, _, [], Acc, Acc).
+map_minimax(Player, Depth, Alpha, Beta, [GS|T], Acc, EvalsList):-
+    minimax_aux(Depth, Alpha, Beta, GS, _-E),
+    (Player = w -> Nbeta is Beta; Nalpha is Alpha),
+    (Player = w ->
+        (E > Alpha -> Nalpha is E; Nalpha is Alpha);
+        (E < Beta -> Nbeta is E; Nbeta is Beta)
+    ),
+    map_minimax(Player, Depth, Nalpha, Nbeta, T, [E|Acc], EvalsList).
