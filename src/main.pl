@@ -132,7 +132,7 @@ make_a_move([CP,CB,OB], NGS):-
     skip_line, !.
 make_a_move([CP,CB,OB], NGS):-
     player(CP, L), % computer player
-    (L = 4 -> L_ is 6; L_ is L - 1),
+    (L = 4 -> L_ is 4; L_ is L - 1),
     choose_move([CP,CB,OB], L_, M),
     display_computer_move([CP,CB,OB], M),
     skip_line,

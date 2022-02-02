@@ -166,10 +166,11 @@ board_evaluation([CP,CB,_], E):-
     knights_position_score(b, CB, BKS),
     attacking_knights([w,CB,_], WAK),
     attacking_knights([b,CB,_], BAK),
-    ((CP = w, WAK > 0) -> PBAK is BAK - 1; PBAK is BAK),
-    ((CP = b, BAK > 0) -> PWAK is WAK - 1; PWAK is WAK),
-    E is WM + 0.25*(WKS/WM) + 0.25*PWAK - BM - 0.25*(BKS/BM) - 0.25*PBAK.
-
+    (CP = w ->
+        (PWAK is WAK + 0.2, PBAK is BAK);
+        (PBAK is BAK + 0.2, PWAK is WAK)
+    ),
+    E is WM + 0.1*(WKS/WM) + 0.2*PWAK - BM - 0.1*(BKS/BM) - 0.2*PBAK.
 
 %%%% Computer algortihms %%%%
 
@@ -198,55 +199,37 @@ choose_move([CP,CB,_], L, M):-
 % @param Game state
 % @param Resultant move
 minimax(D, [CP,CB,OB], M):-
-    write(D),nl,
-    retractall(minimax_alpha(_)),
-    retractall(minimax_beta(_)),
-    asserta(minimax_alpha(-9999)),
-    asserta(minimax_beta(9999)),
-    minimax_aux(D, [CP,CB,OB], M-_).
+    minimax_aux(D, -9999, 9999, [CP,CB,OB], M-_).
 
 %% base case: game is over
-minimax_aux(_, [CP, CB, OB], _-E):-
+minimax_aux(Depth, _, _, [CP, CB, OB], _-PE):-
     game_over([CP, CB, OB], _), !,
-    board_evaluation([CP, CB, OB], E).
+    board_evaluation([CP, CB, OB], E),
+    (E > 0 -> PE is E + Depth; PE is E - Depth). % prefer quicker game wins
 
 %% base case: depth 0
-minimax_aux(0, [CP, CB, OB], _-E):-
+minimax_aux(0, _, _, [CP, CB, OB], _-E):-
     board_evaluation([CP, CB, OB], E).
 
-%% alpha beta pruning
-minimax_aux(Depth, [CP, CB, OB], _-E):-
-    Depth > 0,
-    board_evaluation([CP, CB, OB], E),
-    minimax_alpha(Alpha),
-    minimax_beta(Beta),
-    %%write('trying\n'),
-    (CP = w -> E =< Alpha; E >= Beta), !,
-    write('pruning!\n'),
-    format('D: ~w, CP: ~w, Beta: ~w, Alpha: ~w, E: ~w\n\n',[Depth, CP, Beta, Alpha, E]).
-
 %% recursive case
-minimax_aux(Depth, [CP, CB, _], M-E):-
+minimax_aux(Depth, Alpha, Beta, [CP, CB, _], M-E):-
     Depth > 0,
     valid_moves([CP, CB, _], ValidMoves),
     maplist(move([CP, CB, _]), ValidMoves, NewGameStates),
     NewDepth is Depth - 1,
-    maplist(minimax_aux(NewDepth), NewGameStates, Evals_),
-    maplist(filter_eval, Evals_, Evals),
-    (Depth = 5 -> (write(Evals),nl,write(ValidMoves),nl); write(' ')),
+    map_minimax(CP, NewDepth, Alpha, Beta, NewGameStates, [], Evals_),
+    reverse(Evals_, Evals),
     (CP = w -> max_element(Evals, Index, E); min_element(Evals, Index, E)),
-    nth0(Index, ValidMoves, M),
-    minimax_alpha(Alpha),
-    minimax_beta(Beta),
-    (CP = w -> 
-        (
-            retractall(minimax_alpha(_)),
-            (E > Alpha -> asserta(minimax_alpha(E)); asserta(minimax_alpha(Alpha)))
-        ); 
-        (
-            retractall(minimax_beta(_)),
-            (E < Beta -> asserta(minimax_beta(E)); asserta(minimax_beta(Beta)))
-        )
-    ).
+    nth0(Index, ValidMoves, M).
 
-filter_eval(_-E,E).
+map_minimax(_, _, Alpha, Beta, _, Acc, Acc):-
+    Alpha >= Beta, !.
+map_minimax(_, _, _, _, [], Acc, Acc).
+map_minimax(Player, Depth, Alpha, Beta, [GS|T], Acc, EvalsList):-
+    minimax_aux(Depth, Alpha, Beta, GS, _-E),
+    (Player = w -> Nbeta is Beta; Nalpha is Alpha),
+    (Player = w ->
+        (E > Alpha -> Nalpha is E; Nalpha is Alpha);
+        (E < Beta -> Nbeta is E; Nbeta is Beta)
+    ),
+    map_minimax(Player, Depth, Nalpha, Nbeta, T, [E|Acc], EvalsList).
